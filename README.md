@@ -18,9 +18,57 @@
   <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-Multi--Stage-2496ED.svg?logo=docker&logoColor=white" alt="Docker"/></a>
   <a href="https://github.com/v-ani-2006/code-review-agent/actions"><img src="https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF.svg?logo=githubactions&logoColor=white" alt="GitHub Actions"/></a>
   <a href="https://github.com/v-ani-2006/code-review-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15.1-black.svg?logo=next.js&logoColor=white" alt="Next.js 15"/></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19.0-61DAFB.svg?logo=react&logoColor=black" alt="React 19"/></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind-3.4-38B2AC.svg?logo=tailwind-css&logoColor=white" alt="Tailwind CSS"/></a>
   <a href="https://coverage.readthedocs.io/"><img src="https://img.shields.io/badge/Coverage-86%25-brightgreen.svg" alt="Coverage: 86%"/></a>
   <a href="https://github.com/v-ani-2006/code-review-agent/releases/tag/v1.0.0"><img src="https://img.shields.io/badge/Release-v1.0.0-success.svg" alt="Release: v1.0.0"/></a>
 </p>
+
+---
+
+## 🏆 Quick Evaluation Guide for Judges & Reviewers
+
+If you are evaluating this project, here is the fastest way to inspect, run, and test the entire system:
+
+### 1. 🌐 Interactive Web Frontend (Next.js 15 + React 19)
+The repository includes a modern SaaS frontend built with Next.js 15, React 19, Monaco Editor, TanStack Query, and Recharts:
+```bash
+# In the project root:
+npm install
+npm run dev
+```
+Open **[http://localhost:3000](http://localhost:3000)** in your browser:
+* **Landing Page (`/`)**: Animated SaaS showcase with dynamic hero and architecture walkthrough.
+* **Code Review Workspace (`/review`)**: Resizable Monaco Editor with live AST complexity scoring, CWE security alerts, and Gemini AI reasoning.
+* **Executive Dashboard (`/dashboard`)**: KPI overview cards, activity heatmaps, and audit feed.
+* **Analytics Intelligence (`/analytics`)**: Recharts graphs for Cyclomatic McCabe complexity, score trajectories, and CSV/JSON/MD exports.
+* **AI Documentation (`/documentation`)**: Automated generators for READMEs, PEP 257 docstrings, and Pytest suites.
+* **Reports Archive (`/reports`)**: Searchable index of generated audit reports with instant multi-format downloads.
+* **Telemetry & Monitoring (`/monitoring`)**: Real-time cluster health and container diagnostics.
+
+### 2. ⚡ Backend Services (FastAPI + PostgreSQL + Redis)
+Start the complete containerized backend stack with a single command:
+```bash
+docker compose up -d
+```
+Explore the interactive APIs:
+* **Swagger UI / OpenAPI Explorer**: Open **[http://localhost:8000/docs](http://localhost:8000/docs)** to test all 20+ endpoints interactively.
+* **Subsystem Health Probe**: Open **[http://localhost:8000/health](http://localhost:8000/health)** for real-time status of PostgreSQL, Redis, and Gemini.
+
+### 3. 🧪 Automated Test Suite & Code Quality
+Run the automated test suite directly:
+```bash
+# Run 116+ automated pytest test suites
+pytest -v
+
+# Run type checker & linter
+ruff check app
+mypy app
+```
+
+### 4. 🔄 CI/CD Pipelines
+Check the **[GitHub Actions Tab](https://github.com/v-ani-2006/code-review-agent/actions)** to verify automated CI/CD workflows (CI master, tests, Ruff linter, MyPy type checks, Bandit security audits, and Docker builds).
 
 ---
 
@@ -104,6 +152,12 @@ By combining in-memory Python Abstract Syntax Tree (AST) inspection with high-re
 
 | Technology | Category | Purpose in CodePilot AI |
 | :--- | :--- | :--- |
+| **Next.js 15 (App Router)** | Frontend Framework | Server & Client components with optimized routing & streaming |
+| **React 19** | UI Library | Modern reactive user interface rendering |
+| **Tailwind CSS & shadcn/ui** | Styling | Custom HSL design tokens, responsive layouts, glassmorphism |
+| **Monaco Editor** | Code Editor | Full in-browser IDE experience with syntax highlighting and diffs |
+| **TanStack Query & Zustand** | State Management | Background refetching, 10s telemetry polling, client stores |
+| **Recharts** | Visualizations | Responsive SVG graphs for cyclomatic complexity and quality |
 | **Python 3.13** | Language | Core runtime leveraging modern performance and asyncio enhancements |
 | **FastAPI** | Framework | High-performance asynchronous REST API framework |
 | **SQLAlchemy 2.0** | ORM | Declarative asynchronous database access layer |
