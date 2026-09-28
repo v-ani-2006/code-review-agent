@@ -6,7 +6,7 @@
 -r requirements.txt
 
 # --- Code Formatting & Style --------------------------------------------------
-black>=24.2.0
+black>=26.5.1
 isort>=5.13.2
 ruff>=0.3.0
 
