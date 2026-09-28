@@ -1,0 +1,26 @@
+# ==============================================================================
+# .github/CODEOWNERS — Repository Code Ownership & Review Routing
+# CodePilot AI — Phase 13 DevOps Toolchain
+# ==============================================================================
+
+# Global fallback: Every file in the repo requires review from project maintainer
+* @vani
+
+# Core backend infrastructure, architecture & database migrations
+/app/core/ @vani
+/app/db/ @vani
+/alembic/ @vani
+/app/models/ @vani
+
+# AI Reasoning Engine, AST Analysis & Generators
+/app/ai/ @vani
+
+# API Route Controllers & OpenAPI Specifications
+/app/api/ @vani
+
+# DevOps, GitHub Actions & Container Orchestration
+/.github/ @vani
+/Dockerfile @vani
+/docker-compose*.yml @vani
+/scripts/ @vani
+/nginx/ @vani

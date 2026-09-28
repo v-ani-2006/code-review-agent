@@ -1,0 +1,89 @@
+# ==============================================================================
+# .github/workflows/security.yml — Security Auditing & Vulnerability Scanning
+# CodePilot AI — Phase 13 DevOps Toolchain
+# ==============================================================================
+
+name: Security & Vulnerability Auditing
+
+on:
+  schedule:
+    # Run weekly on Monday at 02:00 UTC
+    - cron: "0 2 * * 1"
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    name: Security & Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install Security Scanners
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+
+      - name: Create Reports Directory
+        run: mkdir -p security_reports
+
+      - name: Run Bandit AST Security Scan
+        run: |
+          bandit -c .bandit -r app/ -f txt -o security_reports/bandit_report.txt || true
+          bandit -c .bandit -r app/ -f json -o security_reports/bandit_report.json || true
+          cat security_reports/bandit_report.txt
+
+      - name: Run Safety Dependency Vulnerability Scan
+        run: |
+          safety check -r requirements.txt --output text > security_reports/safety_report.txt || true
+          cat security_reports/safety_report.txt
+
+      - name: Run Secret Scanning (Heuristic Scan)
+        run: |
+          echo "Scanning for sensitive keys, leaked tokens, and uncommitted credentials..."
+          python -c '
+import re, glob, sys
+patterns = [
+    (r"(?i)api[_-]?key\s*=\s*[\"'\'''][a-zA-Z0-9_\-]{20,}[\"'\''']", "API Key"),
+    (r"(?i)secret[_-]?key\s*=\s*[\"'\'''][a-zA-Z0-9_\-]{20,}[\"'\''']", "Secret Key"),
+    (r"(?i)password\s*=\s*[\"'\'''][^\"'\''']{8,}[\"'\''']", "Hardcoded Password"),
+    (r"AIza[0-9A-Za-z-_]{35}", "Google API Key"),
+    (r"ghp_[0-9a-zA-Z]{36}", "GitHub Personal Access Token"),
+]
+leaks = []
+for file in glob.glob("app/**/*.py", recursive=True):
+    with open(file, "r", encoding="utf-8") as f:
+        for i, line in enumerate(f, 1):
+            if "Field(" in line or "os.getenv" in line or "#" in line:
+                continue
+            for pat, name in patterns:
+                if re.search(pat, line):
+                    leaks.append(f"{file}:{i} - Possible {name}")
+if leaks:
+    with open("security_reports/secret_scan_report.txt", "w") as out:
+        out.write("\n".join(leaks))
+    print("Found potential secrets:\n" + "\n".join(leaks))
+else:
+    with open("security_reports/secret_scan_report.txt", "w") as out:
+        out.write("No hardcoded credentials or API tokens detected in app/.\n")
+    print("Clean: No hardcoded credentials detected.")
+'
+
+      - name: Upload Security Reports Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-reports
+          path: security_reports/
+          retention-days: 30

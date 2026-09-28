@@ -1,0 +1,60 @@
+# ==============================================================================
+# .github/dependabot.yml — Automated Dependency Updates
+# CodePilot AI — Phase 13 DevOps Toolchain
+# ==============================================================================
+
+version: 2
+updates:
+  # --- Python Ecosystem -------------------------------------------------------
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "vani"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # --- GitHub Actions Ecosystem -----------------------------------------------
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:30"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "vani"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci(deps)"
+      include: "scope"
+
+  # --- Docker Ecosystem Placeholder -------------------------------------------
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "vani"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "docker(deps)"
+      include: "scope"

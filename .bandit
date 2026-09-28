@@ -1,0 +1,27 @@
+# ==============================================================================
+# .bandit — Security Scanner Configuration for Python
+# CodePilot AI — Phase 13 DevOps Toolchain
+# ==============================================================================
+
+[bandit]
+targets: app
+exclude_dirs:
+    - /tests
+    - /alembic
+    - /uploads
+    - /reports
+    - /backups
+    - /venv
+    - /.venv
+    - /coverage_html
+
+# Skips:
+# B101: Test for use of assert
+# B104: Test for binding to all interfaces (0.0.0.0 is required for Docker containers)
+# B105: Hardcoded password string check (triggered by default settings schema)
+# B311: Standard pseudo-random generator (used for non-cryptographic sampling)
+skips:
+    - B101
+    - B104
+    - B105
+    - B311

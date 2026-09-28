@@ -1,0 +1,52 @@
+types {
+    # Text
+    text/html                             html htm shtml;
+    text/css                              css;
+    text/xml                              xml;
+    text/plain                            txt;
+    text/mathml                           mml;
+    text/plain                            log;
+
+    # JavaScript
+    application/javascript                js;
+    application/json                      json;
+
+    # Images
+    image/gif                             gif;
+    image/jpeg                            jpeg jpg;
+    image/png                             png;
+    image/svg+xml                         svg svgz;
+    image/tiff                            tif tiff;
+    image/vnd.wap.wbmp                    wbmp;
+    image/webp                            webp;
+    image/x-icon                          ico;
+
+    # Fonts
+    font/woff                             woff;
+    font/woff2                            woff2;
+    application/vnd.ms-fontobject         eot;
+    font/ttf                              ttf;
+    font/otf                              otf;
+
+    # Documents
+    application/pdf                       pdf;
+    application/zip                       zip;
+    application/x-tar                     tar;
+    application/gzip                      gz;
+    application/octet-stream              bin exe dll;
+    application/octet-stream              deb;
+    application/octet-stream              dmg;
+    application/octet-stream              iso img;
+    application/octet-stream              msi msp msm;
+    application/msword                    doc;
+    application/vnd.openxmlformats-officedocument.wordprocessingml.document   docx;
+    application/vnd.ms-excel              xls;
+    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet         xlsx;
+
+    # Audio / Video
+    audio/mpeg                            mp3;
+    audio/ogg                             ogg;
+    video/mp4                             mp4;
+    video/mpeg                            mpeg mpg;
+    video/webm                            webm;
+}

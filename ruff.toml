@@ -1,0 +1,100 @@
+# ==============================================================================
+# Ruff Configuration — Fast Python Linter & Code Formatter
+# CodePilot AI — Phase 13 DevOps Toolchain
+# ==============================================================================
+
+# Target Python version
+target-version = "py313"
+
+# Maximum line length (consistent with Black)
+line-length = 88
+
+# Files to include / exclude
+include = ["*.py", "*.pyi", "**/pyproject.toml"]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "alembic/versions",
+    "uploads",
+    "reports",
+]
+
+[lint]
+# Enable rules:
+# E / W: pycodestyle errors and warnings
+# F: Pyflakes
+# I: isort
+# B: flake8-bugbear
+# C4: flake8-comprehensions
+# UP: pyupgrade
+# S: flake8-bandit (security checks)
+# N: pep8-naming
+# SIM: flake8-simplify
+# T20: flake8-print
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "C4",
+    "UP",
+    "S",
+    "N",
+    "SIM",
+]
+
+# Rules to ignore:
+# E501: Line length managed by formatter (Black)
+# B008: Do not perform function call in argument defaults (standard FastAPI Depends() pattern)
+# S101: Use of assert detected (standard in tests)
+# S104: Possible binding to all interfaces (standard in Docker 0.0.0.0)
+# S105: Possible hardcoded password (often triggered by test fixtures or default settings)
+# N805: First argument of a method should be named 'self' (Pydantic validator/computed_field exceptions)
+# SIM108: Use ternary operator instead of if-else-block (readability preference)
+ignore = [
+    "E501",
+    "B008",
+    "S101",
+    "S104",
+    "S105",
+    "N805",
+    "SIM108",
+]
+
+# Allow unused variables when underscore-prefixed
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[lint.per-file-ignores]
+# Ignore security checks, bare asserts, and unused imports in tests
+"tests/**/*.py" = ["S", "E501", "F401", "B011", "N802"]
+# Ignore migration scripts
+"alembic/**/*.py" = ["E501", "F401", "I001"]
+# Allow wildcard imports in __init__.py files
+"**/__init__.py" = ["F401", "F403"]
+
+[lint.isort]
+known-first-party = ["app"]
+combine-as-imports = true
+
+[lint.mccabe]
+# Maximum cyclomatic complexity threshold
+max-complexity = 15

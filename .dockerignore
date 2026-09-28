@@ -1,0 +1,88 @@
+# ==============================================================================
+# .dockerignore — Exclude unnecessary files from Docker build context
+# Reduces image build time and prevents secrets from leaking into the image
+# ==============================================================================
+
+# Version control
+.git
+.gitignore
+
+# Python bytecode & caches
+__pycache__
+*.py[cod]
+*$py.class
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE & editor configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Test artifacts
+htmlcov/
+coverage_html/
+coverage.xml
+.coverage
+*.coverage
+
+# Local environment files (secrets should not be baked into image)
+.env
+.env.local
+.env.*.local
+
+# Local development uploads (mounted as volumes at runtime)
+app/uploads/temp/*
+uploads/*
+!uploads/.gitkeep
+
+# Local generated reports (mounted as volumes at runtime)
+app/reports/*
+reports/*
+!reports/.gitkeep
+
+# Local logs (mounted as volumes at runtime)
+logs/*
+!logs/.gitkeep
+
+# Local database backups
+backups/*
+!backups/.gitkeep
+
+# Documentation (not needed in runtime image)
+docs/
+*.md
+!README.md
+
+# Node modules (if any frontend exists)
+node_modules/
+.npm/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.orig
+
+# Build artifacts
+dist/
+build/
+*.egg-info/

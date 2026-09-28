@@ -1,0 +1,185 @@
+# ==============================================================================
+# .github/workflows/ci.yml — Continuous Integration Pipeline
+# CodePilot AI — Phase 13 DevOps Toolchain
+# ==============================================================================
+
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ----------------------------------------------------------------------------
+  # Job 1: Linting, Formatting & Static Type Analysis
+  # ----------------------------------------------------------------------------
+  lint-and-types:
+    name: Code Quality & Typing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install Lint & Type Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run Ruff Linter
+        run: |
+          echo "::group::Ruff Linting"
+          ruff check .
+          echo "::endgroup::"
+
+      - name: Run Black Formatting Check
+        run: |
+          echo "::group::Black Code Style Verification"
+          black --check --diff .
+          echo "::endgroup::"
+
+      - name: Run isort Import Order Check
+        run: |
+          echo "::group::isort Import Order Verification"
+          isort --check-only --diff .
+          echo "::endgroup::"
+
+      - name: Run MyPy Static Type Analysis
+        run: |
+          echo "::group::MyPy Type Checking"
+          mypy app --config-file=mypy.ini
+          echo "::endgroup::"
+
+  # ----------------------------------------------------------------------------
+  # Job 2: Security Auditing & Vulnerability Scanning
+  # ----------------------------------------------------------------------------
+  security-audit:
+    name: Security & Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install Security Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+
+      - name: Run Bandit AST Security Scan
+        run: |
+          echo "::group::Bandit Security Audit"
+          bandit -c .bandit -r app -ll -v
+          echo "::endgroup::"
+
+      - name: Run Safety Dependency Check
+        continue-on-error: true
+        run: |
+          echo "::group::Safety Dependency Vulnerability Audit"
+          safety check -r requirements.txt || true
+          echo "::endgroup::"
+
+  # ----------------------------------------------------------------------------
+  # Job 3: Automated Test Suite & Code Coverage
+  # ----------------------------------------------------------------------------
+  test-and-coverage:
+    name: Automated Tests & Coverage
+    runs-on: ubuntu-latest
+    needs: [lint-and-types, security-audit]
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: codepilot_test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install Application & Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run Alembic Database Migrations
+        env:
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_NAME: codepilot_test_db
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres_password
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key-minimum-32-characters-for-ci-pipeline
+          DEBUG: "false"
+        run: |
+          alembic upgrade head
+
+      - name: Run Pytest Suite with Coverage
+        env:
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_NAME: codepilot_test_db
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres_password
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key-minimum-32-characters-for-ci-pipeline
+          DEBUG: "false"
+        run: |
+          pytest --cov=app --cov-report=term-missing --cov-report=html:coverage_html --cov-report=xml:coverage.xml
+
+      - name: Upload HTML Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-coverage-report
+          path: coverage_html/
+          retention-days: 14
+
+      - name: Upload XML Coverage for Quality Gate
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          retention-days: 14

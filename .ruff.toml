@@ -1,0 +1,55 @@
+# ==============================================================================
+# .ruff.toml — Fast Python Linter & Code Formatter
+# CodePilot AI — Phase 13 DevOps Toolchain
+# ==============================================================================
+
+target-version = "py313"
+line-length = 88
+include = ["*.py", "*.pyi", "**/pyproject.toml"]
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "venv",
+    "alembic/versions",
+    "uploads",
+    "reports",
+]
+
+[lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "C4",
+    "UP",
+    "S",
+    "N",
+    "SIM",
+]
+ignore = [
+    "E501",
+    "B008",
+    "S101",
+    "S104",
+    "S105",
+    "N805",
+    "SIM108",
+]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[lint.per-file-ignores]
+"tests/**/*.py" = ["S", "E501", "F401", "B011", "N802"]
+"alembic/**/*.py" = ["E501", "F401", "I001"]
+"**/__init__.py" = ["F401", "F403"]
+
+[lint.isort]
+known-first-party = ["app"]
+combine-as-imports = true
+
+[lint.mccabe]
+max-complexity = 15

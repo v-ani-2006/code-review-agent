@@ -1,0 +1,168 @@
+# ==============================================================================
+# docker-compose.yml — Development environment
+#
+# Usage:
+#   docker compose up --build          # Build and start all services
+#   docker compose down                # Stop and remove containers
+#   docker compose logs -f backend     # Tail backend logs
+#   docker compose exec backend bash   # Shell into backend
+# ==============================================================================
+
+# ==============================================================================
+# Named volumes for persistent data
+# ==============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+  reports_data:
+    driver: local
+  logs_data:
+    driver: local
+  backups_data:
+    driver: local
+
+# ==============================================================================
+# Isolated Docker network — only Nginx is exposed to the host
+# ==============================================================================
+networks:
+  codepilot_net:
+    driver: bridge
+
+# ==============================================================================
+# Services
+# ==============================================================================
+services:
+
+  # ============================================================================
+  # PostgreSQL — primary relational database
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: codepilot_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-codepilot_db}
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres_password}
+      TZ: UTC
+      PGTZ: UTC
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"   # Expose on 5433 so it doesn't clash with local Postgres on 5432
+    networks:
+      - codepilot_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-postgres} -d ${DATABASE_NAME:-codepilot_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ============================================================================
+  # Redis — caching, rate limiting
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: codepilot_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1
+      --loglevel notice
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6380:6379"   # Expose on 6380 so it doesn't clash with local Redis on 6379
+    networks:
+      - codepilot_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ============================================================================
+  # Backend — FastAPI application with Gunicorn + UvicornWorker
+  # ============================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: codepilot_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Override DB/Redis to point to Docker service names (not localhost)
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-codepilot_db}
+      DATABASE_USER: ${DATABASE_USER:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres_password}
+      DATABASE_URL: ""
+      REDIS_URL: redis://redis:6379/0
+      # Application settings
+      DEBUG: "false"
+      WORKERS: ${WORKERS:-2}
+      PYTHONPATH: /app
+    volumes:
+      - uploads_data:/app/uploads
+      - reports_data:/app/reports
+      - logs_data:/app/logs
+      # Development bind mounts: live-reload app code without rebuild
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+      - ./alembic.ini:/app/alembic.ini
+      - ./gunicorn_conf.py:/app/gunicorn_conf.py
+    ports:
+      - "8000:8000"   # Direct access for development (Nginx also forwards in production)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - codepilot_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+
+  # ============================================================================
+  # Nginx — reverse proxy, gzip, security headers, upload limit
+  # ============================================================================
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: codepilot_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/mime.types:/etc/nginx/mime.types:ro
+      - uploads_data:/app/uploads:ro
+      - reports_data:/app/reports:ro
+      - logs_data:/var/log/nginx
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - codepilot_net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

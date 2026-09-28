@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodePilot Project Audit — project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --card-bg: #161b22;
+      --border-color: #30363d;
+      --text-primary: #c9d1d9;
+      --text-muted: #8b949e;
+      --heading-color: #f0f6fc;
+      --accent: #58a6ff;
+      --accent-hover: #79c0ff;
+      --code-bg: #090d13;
+      --table-stripe: #1c2128;
+      --badge-pass: #238636;
+      --badge-warn: #d29922;
+      --badge-fail: #da3633;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2.5rem 3rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    header.report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 1.1rem;
+      letter-spacing: -0.5px;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--heading-color);
+      font-weight: 600;
+      margin-top: 1.8rem;
+      margin-bottom: 0.8rem;
+    }
+    h1 {
+      font-size: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+    h2 {
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+    h3 {
+      font-size: 1.15rem;
+    }
+    p {
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+    ul, ol {
+      margin-bottom: 1.2rem;
+      padding-left: 1.8rem;
+    }
+    li {
+      margin-bottom: 0.4rem;
+    }
+    pre {
+      background-color: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.2rem;
+      overflow-x: auto;
+      margin: 1.2rem 0;
+      font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+      font-size: 0.9rem;
+    }
+    code {
+      font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+      background-color: rgba(110, 118, 129, 0.4);
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-size: 0.88em;
+    }
+    pre code {
+      background-color: transparent;
+      padding: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+    th {
+      background-color: var(--table-stripe);
+      color: var(--heading-color);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+    tr:hover {
+      background-color: rgba(88, 166, 255, 0.05);
+    }
+    blockquote {
+      border-left: 4px solid var(--accent);
+      padding: 0.5rem 1rem;
+      color: var(--text-muted);
+      background-color: rgba(88, 166, 255, 0.05);
+      border-radius: 0 6px 6px 0;
+      margin: 1.2rem 0;
+    }
+    hr {
+      border: 0;
+      border-top: 1px solid var(--border-color);
+      margin: 2rem 0;
+    }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem 1.2rem;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="report-header">
+      <div class="logo-badge">
+        <span>🤖</span>
+        <span>CodePilot AI</span>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-muted);">
+        Automated Technical Report
+      </div>
+    </header>
+    <main>
+      <h1 id="codepilot-ai-project-code-review-project">CodePilot AI Project Code Review: <code>project</code></h1>
+<blockquote>
+<p><strong>Generated:</strong> 2026-09-28 11:34:16 UTC<br />
+<strong>Overall Project Score:</strong> <code>89.13/100</code><br />
+<strong>Total Analyzed Files:</strong> <code>3</code></p>
+</blockquote>
+<h2 id="1-executive-summary">1. Executive Summary</h2>
+<ul>
+<li><strong>Security Summary:</strong> Robust security posture with zero critical findings.</li>
+<li><strong>Complexity Summary:</strong> Average Maintainability Index of 92.1/100 across 3 files.</li>
+<li><strong>Documentation:</strong> Scanned 1 top-level packages. Average readability index: 87.5/100.</li>
+<li><strong>Critical Issues Logged:</strong> <code>0</code></li>
+<li><strong>Total Issues Identified:</strong> <code>7</code></li>
+</ul>
+<h2 id="2-project-architecture-metrics">2. Project Architecture &amp; Metrics</h2>
+<ul>
+<li><strong>Total Source Lines:</strong> <code>11</code></li>
+<li><strong>Functions Defined:</strong> <code>3</code></li>
+<li><strong>Classes Declared:</strong> <code>0</code></li>
+<li><strong>Average Maintainability Index:</strong> <code>92.1/100</code></li>
+<li><strong>Average Readability Score:</strong> <code>87.5/100</code></li>
+<li><strong>Duplicate Imports Detected:</strong> <code>0</code></li>
+</ul>
+<h2 id="3-directory-structure-tree">3. Directory Structure Tree</h2>
+<pre><code class="language-text">90929a81-569c-43d2-87f2-bf8a3ba7e46d_project/
+├── src/
+│   ├── __init__.py
+│   ├── calculator.py
+│   └── utils.py
+└── README.md
+</code></pre>
+<h2 id="4-file-by-file-breakdown">4. File-by-File Breakdown</h2>
+<table>
+<thead>
+<tr>
+<th>Filename</th>
+<th>Score</th>
+<th>Security</th>
+<th>Complexity</th>
+<th>Readability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/__init__.py</code></td>
+<td>97.0</td>
+<td>100.0</td>
+<td>100.0</td>
+<td>100.0</td>
+</tr>
+<tr>
+<td><code>src/calculator.py</code></td>
+<td>81.3</td>
+<td>100.0</td>
+<td>100.0</td>
+<td>75.0</td>
+</tr>
+<tr>
+<td><code>src/utils.py</code></td>
+<td>89.1</td>
+<td>100.0</td>
+<td>100.0</td>
+<td>87.5</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>Report compiled automatically by CodePilot AI Project Review Engine.</em></p>
+    </main>
+    <footer>
+      Generated with CodePilot AI Reasoning & Export Engine &bull; Confidential &bull; Phase 7
+    </footer>
+  </div>
+</body>
+</html>

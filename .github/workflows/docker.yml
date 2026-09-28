@@ -1,0 +1,97 @@
+# ==============================================================================
+# .github/workflows/docker.yml — Docker Build, Compose Validation & Container QA
+# CodePilot AI — Phase 13 DevOps Toolchain
+# ==============================================================================
+
+name: Docker Build & Verification
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "Dockerfile"
+      - "docker-compose*.yml"
+      - "nginx/**"
+      - "scripts/*.sh"
+      - "requirements*.txt"
+      - ".github/workflows/docker.yml"
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  docker-build-and-test:
+    name: Build & Validate Containers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate Docker Compose Configuration (Dev)
+        run: |
+          docker compose -f docker-compose.yml config > /dev/null
+          echo "docker-compose.yml syntax is valid."
+
+      - name: Validate Docker Compose Configuration (Prod)
+        run: |
+          docker compose -f docker-compose.prod.yml config > /dev/null
+          echo "docker-compose.prod.yml syntax is valid."
+
+      - name: Build Multi-Stage Docker Images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          target: production
+          tags: codepilot-ai-backend:test
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Start Container Stack with Docker Compose
+        env:
+          DATABASE_PASSWORD: postgres_password
+          DATABASE_NAME: codepilot_db
+          DATABASE_USER: postgres
+          WORKERS: 2
+        run: |
+          # Copy template env
+          cp .env.example .env
+          docker compose up -d --build
+          docker compose ps
+
+      - name: Wait for Containers to Become Healthy
+        timeout-minutes: 3
+        run: |
+          echo "Polling container health status..."
+          for i in {1..30}; do
+            STATUS=$(docker inspect --format='{{json .State.Health.Status}}' codepilot_backend 2>/dev/null || echo '"unknown"')
+            echo "Attempt $i: Backend health is $STATUS"
+            if [ "$STATUS" = '"healthy"' ]; then
+              echo "Backend is healthy!"
+              break
+            fi
+            sleep 4
+          done
+
+      - name: Verify Live HTTP Health Probe
+        run: |
+          curl -fail http://localhost:8000/health || curl -fail http://localhost/health
+
+      - name: Run Unit Tests Inside Running Docker Container
+        run: |
+          docker compose exec -T backend pytest tests/unit -v
+
+      - name: Display Container Logs on Completion
+        if: always()
+        run: |
+          docker compose logs backend --tail 50
+          docker compose logs nginx --tail 20
+
+      - name: Teardown Containers
+        if: always()
+        run: |
+          docker compose down -v
