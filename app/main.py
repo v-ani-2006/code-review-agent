@@ -154,25 +154,36 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title=settings.APP_NAME,
     description="""
-## AI Code Review Agent API 🤖
+## CodePilot AI — Production Code Review & Quality Engineering API 🤖
 
 An enterprise-grade, memory-powered backend service designed to analyze source code diffs,
 detect security vulnerabilities, enforce stylistic conventions, and provide automated review feedback.
 
 ### Key Capabilities:
 * **Static Code Analysis**: Python AST parsing, Radon cyclomatic complexity & maintainability, Bandit-style security checks, PEP 8 heuristics.
+* **Google Gemini AI Reasoning**: Semantic reviews, automated bug diagnosis & patches, execution flow explanations, and pytest suite generation.
 * **Authentication & Authorization**: OAuth2 Password Flow, JWT access & refresh tokens, bcrypt hashing, and API Key authentication.
 * **Role-Based Access Control**: Active account verification and administrator permissions.
 * **Production Caching & Rate Limiting**: Redis asynchronous caching with graceful fallback and SlowAPI rate protection.
 * **Telemetry & Webhooks**: Prometheus metric collection, HMAC-SHA256 signed event delivery, and deep health diagnostics.
-* **Database Layer**: PostgreSQL + SQLAlchemy 2.x async ORM with Alembic migrations.
+* **Database Layer**: PostgreSQL 16 + SQLAlchemy 2.x async ORM with Alembic migrations.
 * **Production DevOps & CI/CD**: GitHub Actions workflows, Ruff & Black linting, MyPy static typing, Bandit security, and automated releases.
     """,
     version=settings.APP_VERSION,
+    terms_of_service="https://github.com/v-ani-2006/code-review-agent/blob/main/docs/devops.md",
+    contact={
+        "name": "CodePilot AI Engineering Team",
+        "url": "https://github.com/v-ani-2006/code-review-agent",
+        "email": "dev@codepilot.ai",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    openapi_tags=tags_metadata,
     docs_url="/docs" if settings.ENABLE_DOCS else None,
     redoc_url="/redoc" if settings.ENABLE_DOCS else None,
     openapi_url="/openapi.json" if settings.ENABLE_DOCS else None,
-    openapi_tags=tags_metadata,
     lifespan=lifespan,
 )
 

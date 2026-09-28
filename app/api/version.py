@@ -21,4 +21,7 @@ async def get_version() -> VersionResponse:
         debug=settings.DEBUG,
         build_commit=settings.BUILD_COMMIT,
         build_timestamp=settings.BUILD_TIMESTAMP,
+        ai_provider=settings.AI_PROVIDER,
+        database_provider=settings.DATABASE_PROVIDER,
+        cache_provider=settings.CACHE_PROVIDER,
     )

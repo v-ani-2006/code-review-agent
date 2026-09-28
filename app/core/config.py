@@ -12,7 +12,7 @@ class Settings(BaseSettings):
         description="Name of the application",
     )
     APP_VERSION: str = Field(
-        default="0.1.0",
+        default="1.0.0",
         description="Current semantic version of the application",
     )
     DEBUG: bool = Field(
@@ -24,12 +24,24 @@ class Settings(BaseSettings):
         description="Optional prefix path for all API routes (e.g., /api/v1)",
     )
     BUILD_COMMIT: Optional[str] = Field(
-        default=None,
+        default="main-v1.0.0",
         description="Git commit hash corresponding to the deployed artifact",
     )
     BUILD_TIMESTAMP: Optional[str] = Field(
-        default=None,
+        default="2026-09-28T14:00:00Z",
         description="Build timestamp of the deployed container image",
+    )
+    AI_PROVIDER: str = Field(
+        default="Google Gemini (gemini-2.5-flash)",
+        description="Active AI provider backend",
+    )
+    DATABASE_PROVIDER: str = Field(
+        default="PostgreSQL 16 (asyncpg)",
+        description="Active relational database backend",
+    )
+    CACHE_PROVIDER: str = Field(
+        default="Redis 7 (redis-py)",
+        description="Active cache & rate limiting backend",
     )
 
     # PostgreSQL Database Credentials

@@ -46,11 +46,14 @@ async def health_check() -> HealthResponse:
 
     return HealthResponse(
         status=status_str,
+        api_status=status_str,
+        application=settings.APP_NAME,
         app_name=settings.APP_NAME,
         version=settings.APP_VERSION,
         environment="development" if settings.DEBUG else "production",
         uptime=system_monitor.get_uptime_human(),
         timestamp=datetime.now(timezone.utc).isoformat(),
+        ai_provider=settings.AI_PROVIDER,
         database=db_res,
         redis=redis_res,
         gemini=gemini_res,

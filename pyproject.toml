@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "code-review-agent"
-version = "0.1.0"
+version = "1.0.0"
 description = "A production-grade FastAPI backend service for an AI-powered code review agent"
 readme = "README.md"
 authors = [

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- NEXT_VERSION_HEADER -->
 
+## [1.0.0] - 2026-09-28
+
+### Added
+- **Phase 14: Final Production Polish, Documentation & Portfolio Showcase**:
+  - Centralized application versioning at `1.0.0` across FastAPI, OpenAPI, health endpoints, and build metadata.
+  - Comprehensive documentation suite under `docs/`: `architecture.md` (with 9 Mermaid diagrams), `database-schema.md`, `ai-pipeline.md`, `api-reference.md`, `development-guide.md`, `testing-guide.md`, `security.md`, `troubleshooting.md`, `portfolio.md`, `interview-guide.md`, `screenshots.md`, and `roadmap.md`.
+  - GitHub community governance files: `.github/FUNDING.yml`, `.github/SECURITY.md`, `.github/SUPPORT.md`.
+  - MIT License (`LICENSE`) and Contributor Covenant v2.1 (`CODE_OF_CONDUCT.md`).
+  - Polished OpenAPI Swagger UI with interactive examples, security schemas, contact details, and external docs.
+  - Professional master `README.md` with status badges, feature matrices, architecture diagrams, and quick-start guides.
+  - Formal release notes specification (`VERSION_1_0_0.md`).
+
 ## [0.1.0] - 2026-09-28
 
 ### Added

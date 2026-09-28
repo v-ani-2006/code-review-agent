@@ -85,15 +85,32 @@ class HealthResponse(BaseModel):
         default=None,
         description="Storage system disk capacity",
     )
-
+    application: Optional[str] = Field(
+        default=None,
+        description="Standardized application identifier",
+        examples=["code-review-agent"],
+    )
+    api_status: Optional[str] = Field(
+        default=None,
+        description="Operational API status string",
+        examples=["ok"],
+    )
+    ai_provider: Optional[str] = Field(
+        default=None,
+        description="Active AI provider backend",
+        examples=["Google Gemini (gemini-2.5-flash)"],
+    )
 
     model_config = {
         "json_schema_extra": {
             "example": {
                 "status": "ok",
+                "api_status": "ok",
+                "application": "code-review-agent",
                 "app_name": "code-review-agent",
-                "version": "0.1.0",
+                "version": "1.0.0",
                 "environment": "development",
+                "ai_provider": "Google Gemini (gemini-2.5-flash)",
             }
         }
     }
@@ -130,18 +147,36 @@ class VersionResponse(BaseModel):
     build_timestamp: Optional[str] = Field(
         default=None,
         description="Timestamp when the release artifact was compiled",
-        examples=["2026-09-28T13:30:00Z"],
+        examples=["2026-09-28T14:00:00Z"],
+    )
+    ai_provider: Optional[str] = Field(
+        default=None,
+        description="Active AI reasoning backend",
+        examples=["Google Gemini (gemini-2.5-flash)"],
+    )
+    database_provider: Optional[str] = Field(
+        default=None,
+        description="Active database engine",
+        examples=["PostgreSQL 16 (asyncpg)"],
+    )
+    cache_provider: Optional[str] = Field(
+        default=None,
+        description="Active caching backend",
+        examples=["Redis 7 (redis-py)"],
     )
 
     model_config = {
         "json_schema_extra": {
             "example": {
                 "app_name": "code-review-agent",
-                "version": "0.1.0",
+                "version": "1.0.0",
                 "api_prefix": "",
                 "debug": True,
-                "build_commit": "935afac",
-                "build_timestamp": "2026-09-28T13:30:00Z",
+                "build_commit": "main-v1.0.0",
+                "build_timestamp": "2026-09-28T14:00:00Z",
+                "ai_provider": "Google Gemini (gemini-2.5-flash)",
+                "database_provider": "PostgreSQL 16 (asyncpg)",
+                "cache_provider": "Redis 7 (redis-py)",
             }
         }
     }
