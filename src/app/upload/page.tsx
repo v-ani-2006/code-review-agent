@@ -10,7 +10,7 @@ import { uploadService } from "@/services/upload-service";
 import { BatchTaskStatus } from "@/types/upload";
 import { Spinner } from "@/components/common/loading";
 
-export function UploadPage() {
+export default function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [activeTask, setActiveTask] = useState<BatchTaskStatus | null>(null);
@@ -120,5 +120,3 @@ export function UploadPage() {
     </AppShell>
   );
 }
-
-export default UploadPage;
