@@ -66,16 +66,24 @@ class AIReviewData(BaseModel):
     refactoring_suggestions: List[str] = Field(default_factory=list, description="Design pattern & refactoring opportunities")
     best_practices: List[str] = Field(default_factory=list, description="Recommended idiomatic practices")
     next_steps: List[str] = Field(default_factory=list, description="Actionable next steps")
+    hindsight_context: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Historical conventions and lessons recalled from Hindsight Agent Memory",
+    )
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Metadata and telemetry")
 
 
 class AIReviewResponse(AIBaseResponse):
-    """Combined response payload containing static AST report and AI reasoning."""
+    """Combined response payload containing static AST report, AI reasoning, and Hindsight memory."""
 
     review: AIReviewData = Field(..., description="AI reasoning layer review")
     static_report: Optional[ReviewReport] = Field(
         default=None,
         description="Underlying Phase 5 static AST, complexity, and security report",
+    )
+    hindsight_context: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Recalled Hindsight agent memories actively applied to evaluate this review",
     )
 
 

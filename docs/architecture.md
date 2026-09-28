@@ -35,13 +35,15 @@ flowchart TB
             AIR["/ai (Explain/Docs/Tests/Fix)"]
             UpR["/upload (Zip / Tar / Multi-file)"]
             RepR["/reports (JSON/MD/HTML/PDF)"]
+            HindsightR["/hindsight (Retain/Recall/Reflect)"]
             DashR["/dashboard & /analytics"]
             MonR["/monitoring & /health"]
         end
 
         subgraph CoreServices["Domain Services Layer"]
             AnalyzerSvc["AST & Complexity Analyzer"]
-            GeminiSvc["Gemini 2.5 AI Reasoning Engine"]
+            GeminiSvc["Gemini AI Reasoning Engine"]
+            HindsightSvc["Hindsight Memory & Retrospective Learning Engine"]
             ReportGenSvc["Multi-Format Report Generator"]
             BatchWorker["Asynchronous Batch Orchestrator"]
             WebhookDispatcher["HMAC Webhook Dispatcher"]

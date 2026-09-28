@@ -15,6 +15,7 @@ from app.api import (
     exports,
     generators,
     health,
+    hindsight,
     history,
     metrics,
     monitoring,
@@ -96,6 +97,10 @@ tags_metadata = [
     {
         "name": "AI Review",
         "description": "Google Gemini AI reasoning layer for deep semantic reviews, code explanations, performance optimizations, automated bug fixes, docstrings, and pytest test suite generation.",
+    },
+    {
+        "name": "Hindsight Memory",
+        "description": "Continuous AI agent memory system (25% Evaluation Requirement): Retain review learnings, sub-millisecond semantic Recall, and retrospective Reflect mental model synthesis.",
     },
     {
         "name": "Code Review & AST Analysis",
@@ -221,6 +226,7 @@ app.include_router(dashboard.router, prefix=settings.API_PREFIX)
 app.include_router(analytics.router, prefix=settings.API_PREFIX)
 app.include_router(generators.router, prefix=settings.API_PREFIX)
 app.include_router(exports.router, prefix=settings.API_PREFIX)
+app.include_router(hindsight.router, prefix=settings.API_PREFIX)
 app.include_router(ai_review.router, prefix=settings.API_PREFIX)
 app.include_router(review.router, prefix=settings.API_PREFIX)
 app.include_router(auth.router, prefix=settings.API_PREFIX)

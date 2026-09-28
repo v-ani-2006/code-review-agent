@@ -24,6 +24,8 @@ class AIAnalysisContext(BaseModel):
     style_findings: Dict[str, Any] = Field(default_factory=dict, description="Style and formatting metrics")
     metrics: Dict[str, Any] = Field(default_factory=dict, description="Quantitative source metrics (lines, tokens, etc.)")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional context metadata")
+    hindsight_memories: List[Dict[str, Any]] = Field(default_factory=list, description="Recalled Hindsight agent memories")
+    hindsight_prompt_context: Optional[str] = Field(default=None, description="Formatted Hindsight markdown context")
 
 
 class AIProviderResponse(BaseModel):

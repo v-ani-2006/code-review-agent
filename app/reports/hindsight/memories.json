@@ -1,0 +1,277 @@
+{
+  "codepilot-memory-bank": [
+    {
+      "id": "hindsight-c05ec610",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "security_rule",
+      "content": "Always sanitize and parameterize SQL statements. Never use f-string formatting into db.execute() or raw SQL queries to prevent SQL Injection (CWE-89).",
+      "confidence": 1.0,
+      "tags": [
+        "security",
+        "sql",
+        "injection",
+        "database",
+        "sqlalchemy",
+        "cwe-89"
+      ],
+      "filename_pattern": null,
+      "language": "python",
+      "created_at": "2026-09-28T16:29:30.763826+00:00",
+      "access_count": 8,
+      "source": "seed",
+      "metadata": {}
+    },
+    {
+      "id": "hindsight-f63d7a2a",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "anti_pattern",
+      "content": "Avoid mutable default arguments (e.g. def func(items=[])). Mutable defaults retain state across function invocations; use def func(items=None) instead.",
+      "confidence": 1.0,
+      "tags": [
+        "anti_pattern",
+        "python",
+        "mutable",
+        "default_args",
+        "functions"
+      ],
+      "filename_pattern": null,
+      "language": "python",
+      "created_at": "2026-09-28T16:29:30.763969+00:00",
+      "access_count": 0,
+      "source": "seed",
+      "metadata": {}
+    },
+    {
+      "id": "hindsight-b1c4e2bf",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "security_rule",
+      "content": "Never use eval(), exec(), or pickle.loads() on untrusted inputs. They allow arbitrary remote code execution (RCE).",
+      "confidence": 1.0,
+      "tags": [
+        "security",
+        "rce",
+        "eval",
+        "exec",
+        "pickle",
+        "vulnerability"
+      ],
+      "filename_pattern": null,
+      "language": "python",
+      "created_at": "2026-09-28T16:29:30.764009+00:00",
+      "access_count": 0,
+      "source": "seed",
+      "metadata": {}
+    },
+    {
+      "id": "hindsight-baabefef",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "convention",
+      "content": "In FastAPI route handlers, always declare explicit Pydantic response_model schemas and status_code to ensure strong typing and contract integrity.",
+      "confidence": 1.0,
+      "tags": [
+        "fastapi",
+        "convention",
+        "pydantic",
+        "api",
+        "typing"
+      ],
+      "filename_pattern": null,
+      "language": "python",
+      "created_at": "2026-09-28T16:29:30.764030+00:00",
+      "access_count": 0,
+      "source": "seed",
+      "metadata": {}
+    },
+    {
+      "id": "hindsight-6a80a801",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "convention",
+      "content": "Maintain McCabe Cyclomatic Complexity per function under 10 (Rank A/B). Functions exceeding complexity 15 should be decomposed into modular helpers.",
+      "confidence": 1.0,
+      "tags": [
+        "complexity",
+        "refactor",
+        "radon",
+        "mccabe",
+        "clean_code"
+      ],
+      "filename_pattern": null,
+      "language": "python",
+      "created_at": "2026-09-28T16:29:30.764050+00:00",
+      "access_count": 0,
+      "source": "seed",
+      "metadata": {}
+    },
+    {
+      "id": "hindsight-7b7897ea",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "security_rule",
+      "content": "Use Passlib/Bcrypt with minimum 12 work rounds for password hashing. Never store passwords in plaintext or MD5/SHA-1.",
+      "confidence": 1.0,
+      "tags": [
+        "security",
+        "auth",
+        "bcrypt",
+        "password",
+        "crypto"
+      ],
+      "filename_pattern": null,
+      "language": "python",
+      "created_at": "2026-09-28T16:29:30.764067+00:00",
+      "access_count": 2,
+      "source": "seed",
+      "metadata": {}
+    },
+    {
+      "id": "hindsight-a542705d",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "anti_pattern",
+      "content": "Avoid silent exception swallowing with bare 'except: pass'. Always log the exception or raise an informative HTTP/custom exception.",
+      "confidence": 1.0,
+      "tags": [
+        "anti_pattern",
+        "exceptions",
+        "error_handling",
+        "logging"
+      ],
+      "filename_pattern": null,
+      "language": "python",
+      "created_at": "2026-09-28T16:29:30.764085+00:00",
+      "access_count": 0,
+      "source": "seed",
+      "metadata": {}
+    },
+    {
+      "id": "hindsight-a6d66c1d",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "convention",
+      "content": "Ensure public classes and functions include PEP 257 docstrings outlining parameters, returns, and raised exceptions.",
+      "confidence": 1.0,
+      "tags": [
+        "documentation",
+        "pep257",
+        "docstring",
+        "python"
+      ],
+      "filename_pattern": null,
+      "language": "python",
+      "created_at": "2026-09-28T16:29:30.764103+00:00",
+      "access_count": 0,
+      "source": "seed",
+      "metadata": {}
+    },
+    {
+      "id": "hindsight-7a408766",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "security_rule",
+      "content": "Never hardcode secrets, API keys, or private tokens in code. Use Pydantic Settings, environment variables, or secret vaults.",
+      "confidence": 1.0,
+      "tags": [
+        "security",
+        "secrets",
+        "api_key",
+        "env",
+        "configuration"
+      ],
+      "filename_pattern": null,
+      "language": null,
+      "created_at": "2026-09-28T16:29:30.764121+00:00",
+      "access_count": 0,
+      "source": "seed",
+      "metadata": {}
+    },
+    {
+      "id": "hindsight-1a20bed0",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "observation",
+      "content": "Async database sessions should be wrapped in 'async with session_maker() as session:' contexts to prevent connection leaks.",
+      "confidence": 1.0,
+      "tags": [
+        "database",
+        "async",
+        "sqlalchemy",
+        "pool",
+        "session"
+      ],
+      "filename_pattern": null,
+      "language": "python",
+      "created_at": "2026-09-28T16:29:30.764138+00:00",
+      "access_count": 0,
+      "source": "seed",
+      "metadata": {}
+    },
+    {
+      "id": "mem-73ec7fefd3",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "convention",
+      "content": "API routers must define explicit HTTP status codes.",
+      "confidence": 1.0,
+      "tags": [
+        "http_status",
+        "fastapi"
+      ],
+      "filename_pattern": null,
+      "language": "python",
+      "created_at": "2026-09-28T16:33:40.880234+00:00",
+      "access_count": 1,
+      "source": "api",
+      "metadata": {}
+    },
+    {
+      "id": "mem-3a1bc54c80",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "security_rule",
+      "content": "Never format dynamic values directly into database queries; always use SQLAlchemy bind parameters.",
+      "confidence": 1.0,
+      "tags": [
+        "cwe-89",
+        "injection",
+        "database",
+        "sql",
+        "sqlalchemy"
+      ],
+      "filename_pattern": "user_repository.py",
+      "language": "python",
+      "created_at": "2026-09-28T16:37:00.949128+00:00",
+      "access_count": 3,
+      "source": "api",
+      "metadata": {}
+    },
+    {
+      "id": "mem-ed8e1c8a09",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "refactor_decision",
+      "content": "Historical lesson for 'user_repository.py': Review long functions and loops identified in AST analysis.",
+      "confidence": 1.0,
+      "tags": [
+        "review",
+        "python",
+        "optimization"
+      ],
+      "filename_pattern": "user_repository.py",
+      "language": "python",
+      "created_at": "2026-09-28T16:37:16.457123+00:00",
+      "access_count": 1,
+      "source": "auto_retain",
+      "metadata": {}
+    },
+    {
+      "id": "mem-411273bcb1",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "refactor_decision",
+      "content": "Historical lesson for 'math.py': Review long functions and loops identified in AST analysis.",
+      "confidence": 1.0,
+      "tags": [
+        "optimization",
+        "review",
+        "python"
+      ],
+      "filename_pattern": "math.py",
+      "language": "python",
+      "created_at": "2026-09-28T16:40:25.113865+00:00",
+      "access_count": 0,
+      "source": "auto_retain",
+      "metadata": {}
+    }
+  ]
+}

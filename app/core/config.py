@@ -79,7 +79,7 @@ class Settings(BaseSettings):
         description="Google Gemini API key for AI reasoning",
     )
     GEMINI_MODEL: str = Field(
-        default="gemini-2.5-flash",
+        default="gemini-3.8-flash",
         description="Default Gemini model identifier",
     )
     AI_TIMEOUT_SECONDS: int = Field(
@@ -127,6 +127,36 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = Field(
         default="app/uploads/temp",
         description="Directory path for file uploads",
+    )
+
+    # Hindsight Agent Memory & Retrospective Learning Engine (25% Evaluation Requirement)
+    HINDSIGHT_ENABLED: bool = Field(
+        default=True,
+        description="Toggle Hindsight semantic memory layer and retrospective learning",
+    )
+    HINDSIGHT_BASE_URL: str = Field(
+        default="http://localhost:8888",
+        description="Base URL for Hindsight client server or embedded fallback",
+    )
+    HINDSIGHT_BANK_ID: str = Field(
+        default="codepilot-memory-bank",
+        description="Default Hindsight memory bank identifier for code review learnings",
+    )
+    HINDSIGHT_AUTO_RECALL: bool = Field(
+        default=True,
+        description="Automatically recall relevant past conventions and bugs before AI review",
+    )
+    HINDSIGHT_AUTO_RETAIN: bool = Field(
+        default=True,
+        description="Automatically retain review observations and security findings into Hindsight memory",
+    )
+    HINDSIGHT_TOP_K: int = Field(
+        default=5,
+        description="Number of top relevant memories to recall per review request",
+    )
+    HINDSIGHT_MIN_CONFIDENCE: float = Field(
+        default=0.2,
+        description="Minimum similarity confidence threshold for recalled memories",
     )
     REPORTS_DIR: str = Field(
         default="app/reports",

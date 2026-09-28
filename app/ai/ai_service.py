@@ -39,14 +39,17 @@ from app.schemas.ai_review import (
     AITestRequest,
     AITestResponse,
 )
+from app.schemas.hindsight import HindsightRecallRequest
 from app.schemas.review import ReviewReport
+from app.ai.hindsight_service import hindsight_service
 
 
 class AIService:
     """Core AI orchestration service.
 
     Validates incoming payloads, executes Phase 5 static AST/Radon/Bandit analysis,
-    merges findings into a rich AI context, and delegates to AI providers for reasoning.
+    queries Hindsight Agent Memory for historical conventions, merges findings into a rich AI context,
+    and delegates to AI providers for reasoning.
     """
 
     def _validate_request(self, code: str, language: str) -> None:
@@ -62,8 +65,31 @@ class AIService:
                 detail=f"Unsupported language '{language}'. Supported: {', '.join(SUPPORTED_LANGUAGES)}.",
             )
 
-    def _build_context(self, code: str, filename: str, language: str, report: ReviewReport) -> AIAnalysisContext:
-        """Create structured AIAnalysisContext from static analyzer report."""
+    def _build_context(
+        self,
+        code: str,
+        filename: str,
+        language: str,
+        report: ReviewReport,
+        recalled_memories: Optional[List[Any]] = None,
+    ) -> AIAnalysisContext:
+        """Create structured AIAnalysisContext from static analyzer report and Hindsight memory."""
+        mem_dicts = []
+        prompt_ctx = ""
+        if recalled_memories:
+            mem_dicts = [
+                {
+                    "id": r.memory.id,
+                    "type": r.memory.memory_type.value,
+                    "content": r.memory.content,
+                    "confidence": r.memory.confidence,
+                    "relevance_score": r.relevance_score,
+                    "tags": r.memory.tags,
+                }
+                for r in recalled_memories
+            ]
+            prompt_ctx = hindsight_service.format_hindsight_context(recalled_memories)
+
         return AIAnalysisContext(
             language=language.lower().strip(),
             filename=(filename or "main.py").strip(),
@@ -82,11 +108,13 @@ class AIService:
             style_findings=report.style,
             metrics=report.metrics.model_dump(),
             metadata=report.metadata,
+            hindsight_memories=mem_dicts,
+            hindsight_prompt_context=prompt_ctx,
         )
 
-    # --- 1. AI REVIEW ---
+    # --- 1. AI REVIEW WITH HINDSIGHT MEMORY ---
     async def review_code(self, request: AIReviewRequest) -> AIReviewResponse:
-        """Execute Phase 5 static AST analysis and enrich with Gemini semantic code review."""
+        """Execute Phase 5 static AST analysis and enrich with Gemini AI reasoning & Hindsight memory."""
         start_time = time.perf_counter()
         self._validate_request(request.code, request.language)
 
@@ -97,11 +125,47 @@ class AIService:
             language=request.language,
         )
 
-        # Step 2: Assemble context for AI reasoning
-        context = self._build_context(request.code, request.filename or "main.py", request.language, static_report)
+        # Step 2: Query Hindsight Agent Memory (Recall past conventions & anti-patterns)
+        recalled_memories = []
+        if settings.HINDSIGHT_ENABLED and settings.HINDSIGHT_AUTO_RECALL:
+            try:
+                recall_resp = hindsight_service.recall_memories(
+                    HindsightRecallRequest(
+                        query=request.code,
+                        language=request.language,
+                        filename=request.filename,
+                        top_k=settings.HINDSIGHT_TOP_K,
+                        min_confidence=settings.HINDSIGHT_MIN_CONFIDENCE,
+                    )
+                )
+                recalled_memories = recall_resp.results
+            except Exception as hs_exc:
+                logger.warning("Hindsight memory recall encountered non-fatal error: %s", hs_exc)
+
+        hindsight_payload = [
+            {
+                "id": r.memory.id,
+                "type": r.memory.memory_type.value,
+                "content": r.memory.content,
+                "confidence": r.memory.confidence,
+                "relevance_score": r.relevance_score,
+                "tags": r.memory.tags,
+                "matched_keywords": r.matched_keywords,
+            }
+            for r in recalled_memories
+        ]
+
+        # Step 3: Assemble context for AI reasoning
+        context = self._build_context(
+            request.code,
+            request.filename or "main.py",
+            request.language,
+            static_report,
+            recalled_memories,
+        )
         provider = get_ai_provider(model=request.model)
 
-        # Step 3: Call AI Provider (exceptions are caught and surfaced as fallback)
+        # Step 4: Call AI Provider (exceptions are caught and surfaced as fallback)
         try:
             provider_resp = await provider.review_code(context)
         except Exception as provider_exc:
@@ -117,16 +181,15 @@ class AIService:
             )
         duration = round(time.perf_counter() - start_time, 4)
 
-
         if not provider_resp.success or not provider_resp.parsed_json:
             logger.warning("AI provider review did not return parsed JSON (%s). Generating fallback review.", provider_resp.error)
-            # Synthesize fallback AI review from static findings
             critical_list = [f"[{i.severity}] {i.title}: {i.description}" for i in static_report.issues if i.severity in ("HIGH", "CRITICAL")]
             review_data = AIReviewData(
-                summary=f"Automated review based on Phase 5 static analysis (AI layer note: {provider_resp.error or 'raw output returned'}).",
+                summary=f"Automated review based on Phase 5 static analysis with Hindsight memory (AI layer note: {provider_resp.error or 'raw output returned'}).",
                 overall_assessment=(
                     f"Static quality score: {static_report.scores.overall}/100. "
-                    f"Readability: {static_report.scores.readability}/100, Security: {static_report.scores.security}/100."
+                    f"Readability: {static_report.scores.readability}/100, Security: {static_report.scores.security}/100. "
+                    f"Hindsight recalled {len(recalled_memories)} historical conventions."
                 ),
                 strengths=["Code parsed successfully", f"Complexity rank: {static_report.complexity.rank}"],
                 critical_issues=critical_list,
@@ -138,15 +201,31 @@ class AIService:
                 refactoring_suggestions=["Decompose high-complexity functions."],
                 best_practices=["Add comprehensive type annotations and docstrings."],
                 next_steps=["Address critical security issues first.", "Refactor high complexity blocks."],
-                metadata={"ai_success": False, "ai_error": provider_resp.error},
+                hindsight_context=hindsight_payload,
+                metadata={"ai_success": False, "ai_error": provider_resp.error, "hindsight_count": len(recalled_memories)},
             )
+
+            # Auto-retain observations for future reviews
+            if settings.HINDSIGHT_ENABLED and settings.HINDSIGHT_AUTO_RETAIN:
+                try:
+                    hindsight_service.auto_retain_from_review(
+                        code=request.code,
+                        filename=request.filename or "main.py",
+                        language=request.language,
+                        review_data=review_data,
+                        static_report=static_report,
+                    )
+                except Exception as auto_exc:
+                    logger.debug("Hindsight auto-retain skipped: %s", auto_exc)
+
             return AIReviewResponse(
                 success=True,
-                message="Code review generated with Phase 5 static findings (AI enrichment offline or paused).",
+                message="Code review generated with Phase 5 static findings and Hindsight memory.",
                 processing_time=duration,
                 model_used=provider_resp.model_used,
                 review=review_data,
                 static_report=static_report,
+                hindsight_context=hindsight_payload,
             )
 
         data = provider_resp.parsed_json
@@ -163,16 +242,31 @@ class AIService:
             refactoring_suggestions=data.get("refactoring_suggestions", []),
             best_practices=data.get("best_practices", []),
             next_steps=data.get("next_steps", []),
-            metadata={"ai_success": True, "static_overall_score": static_report.scores.overall},
+            hindsight_context=hindsight_payload,
+            metadata={"ai_success": True, "static_overall_score": static_report.scores.overall, "hindsight_count": len(recalled_memories)},
         )
+
+        # Auto-retain observations for future reviews
+        if settings.HINDSIGHT_ENABLED and settings.HINDSIGHT_AUTO_RETAIN:
+            try:
+                hindsight_service.auto_retain_from_review(
+                    code=request.code,
+                    filename=request.filename or "main.py",
+                    language=request.language,
+                    review_data=review_data,
+                    static_report=static_report,
+                )
+            except Exception as auto_exc:
+                logger.debug("Hindsight auto-retain skipped: %s", auto_exc)
 
         return AIReviewResponse(
             success=True,
-            message="Comprehensive AI and static code review generated successfully.",
+            message="Comprehensive AI and static code review generated with Hindsight memory.",
             processing_time=duration,
             model_used=provider_resp.model_used,
             review=review_data,
             static_report=static_report,
+            hindsight_context=hindsight_payload,
         )
 
     # --- 2. AI EXPLAIN ---

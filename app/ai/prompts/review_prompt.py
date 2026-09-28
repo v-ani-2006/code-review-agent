@@ -14,8 +14,18 @@ def build_review_prompt(context: AIAnalysisContext) -> str:
         for sec in context.security_findings
     ) or "No security vulnerabilities detected by static analyzer."
 
+    hindsight_block = ""
+    if context.hindsight_prompt_context:
+        hindsight_block = f"\n{context.hindsight_prompt_context}\n"
+    elif context.hindsight_memories:
+        mem_lines = [
+            f"- [{m.get('type', 'convention').upper()}] {m.get('content', '')} (Relevance: {int(m.get('relevance_score', 1.0) * 100)}%)"
+            for m in context.hindsight_memories
+        ]
+        hindsight_block = "\n### HINDSIGHT AGENT MEMORY (Historical Conventions & Recalled Precedents):\n" + "\n".join(mem_lines) + "\n"
+
     return f"""You are CodePilot AI, a Principal Software Engineer and Staff Security Reviewer.
-Analyze the following source code along with its Phase 5 Static AST Analysis Report.
+Analyze the following source code along with its Phase 5 Static AST Analysis Report and Hindsight Memory.
 
 ### SOURCE CODE METADATA
 - Language: {context.language}
@@ -32,7 +42,7 @@ Static Issues Detected:
 
 Security Findings:
 {security_summary}
-
+{hindsight_block}
 ### SOURCE CODE TO REVIEW:
 ```{context.language}
 {context.source_code}
