@@ -32,5 +32,5 @@ pytest-cov>=5.0.0
 faker>=24.0.0
 factory-boy>=3.3.0
 pytest-mock>=3.14.0
-gunicorn>=23.0.0
+gunicorn>=26.2.0
 hindsight-client>=0.10.1
