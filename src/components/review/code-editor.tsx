@@ -1,18 +1,93 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Check, Copy, FileCode, Play, RotateCcw, Sparkles, Upload } from "lucide-react";
+import { Check, Copy, FileCode, Play, RotateCcw, Sparkles, Upload, Code } from "lucide-react";
 import { SAMPLE_PYTHON_CODE, SUPPORTED_LANGUAGES } from "@/lib/constants";
 import { useReviewStore } from "@/stores/review-store";
 import { Spinner } from "@/components/common/loading";
 
+// Error boundary to catch any CDN or runtime failure in Monaco Editor
+class MonacoErrorBoundary extends React.Component<
+  { fallback: React.ReactNode; children: React.ReactNode; onError?: () => void },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any) {
+    console.warn("[CodePilot] Monaco Editor caught in boundary, switching to native editor:", error);
+    this.props.onError?.();
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+
+// Resilient native code editor (works offline, 0 CDN dependency, fast & reliable)
+function NativeCodeEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const lineCount = value.split("\n").length;
+  const lineNumbers = Array.from({ length: Math.max(lineCount, 15) }, (_, i) => i + 1);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const target = e.currentTarget;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
+      const newValue = value.substring(0, start) + "    " + value.substring(end);
+      onChange(newValue);
+      setTimeout(() => {
+        target.selectionStart = target.selectionEnd = start + 4;
+      }, 0);
+    }
+  };
+
+  return (
+    <div className="flex h-full w-full overflow-hidden bg-[#1e1e1e] font-mono text-[13px]">
+      {/* Line Numbers Gutter */}
+      <div className="select-none border-r border-[#333] bg-[#181818] px-3 py-3 text-right text-xs text-muted-foreground/40 font-mono min-w-[45px]">
+        {lineNumbers.map((num) => (
+          <div key={num} className="leading-6">
+            {num}
+          </div>
+        ))}
+      </div>
+      {/* Code Textarea */}
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        spellCheck={false}
+        className="h-full w-full resize-none border-none bg-transparent p-3 font-mono text-[13px] leading-6 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-0"
+        placeholder="Paste or write code here..."
+      />
+    </div>
+  );
+}
+
 // Dynamically import Monaco Editor to prevent SSR window issues
-const Editor = dynamic(() => import("@monaco-editor/react"), {
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => (
     <div className="flex h-[420px] w-full items-center justify-center rounded-xl border border-border bg-[#1e1e1e] text-xs text-muted-foreground">
-      <Spinner className="mr-2 h-4 w-4" /> Loading Monaco Code Editor...
+      <Spinner className="mr-2 h-4 w-4" /> Loading Code Editor...
     </div>
   ),
 });
@@ -33,6 +108,22 @@ export function CodeEditor() {
   } = useReviewStore();
 
   const [copied, setCopied] = useState(false);
+  const [monacoFailed, setMonacoFailed] = useState(false);
+  const [forceNative, setForceNative] = useState(false);
+
+  // Catch unhandled Monaco loader failures gracefully
+  useEffect(() => {
+    import("@monaco-editor/react")
+      .then(({ loader }) => {
+        loader.init().catch((err) => {
+          console.warn("[CodePilot] Monaco CDN unreachable, native fallback active:", err);
+          setMonacoFailed(true);
+        });
+      })
+      .catch(() => {
+        setMonacoFailed(true);
+      });
+  }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,6 +143,10 @@ export function CodeEditor() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const nativeEditorElement = (
+    <NativeCodeEditor value={code} onChange={(val) => setCode(val)} />
+  );
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
@@ -77,6 +172,17 @@ export function CodeEditor() {
               </option>
             ))}
           </select>
+
+          {/* Mode Indicator / Toggle */}
+          <button
+            type="button"
+            onClick={() => setForceNative(!forceNative)}
+            title="Toggle between Monaco and High-Performance Native editor"
+            className="hidden sm:inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-secondary hover:text-foreground border border-border/50 transition-colors"
+          >
+            <Code className="h-3 w-3 text-brand-400" />
+            <span>{monacoFailed || forceNative ? "Native Editor" : "Monaco"}</span>
+          </button>
         </div>
 
         {/* Action Buttons */}
@@ -135,25 +241,34 @@ export function CodeEditor() {
         </div>
       </div>
 
-      {/* Monaco Code Editor Container */}
+      {/* Code Editor Container */}
       <div className="h-[420px] w-full bg-[#1e1e1e]">
-        <Editor
-          height="100%"
-          language={language === "python" ? "python" : language}
-          theme="vs-dark"
-          value={code}
-          onChange={(val) => setCode(val || "")}
-          options={{
-            minimap: { enabled: true },
-            fontSize: 13,
-            lineNumbers: "on",
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            tabSize: 4,
-            padding: { top: 12, bottom: 12 },
-            fontFamily: "JetBrains Mono, Menlo, Monaco, Consolas, monospace",
-          }}
-        />
+        {monacoFailed || forceNative ? (
+          nativeEditorElement
+        ) : (
+          <MonacoErrorBoundary
+            fallback={nativeEditorElement}
+            onError={() => setMonacoFailed(true)}
+          >
+            <MonacoEditor
+              height="100%"
+              language={language === "python" ? "python" : language}
+              theme="vs-dark"
+              value={code}
+              onChange={(val) => setCode(val || "")}
+              options={{
+                minimap: { enabled: true },
+                fontSize: 13,
+                lineNumbers: "on",
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                tabSize: 4,
+                padding: { top: 12, bottom: 12 },
+                fontFamily: "JetBrains Mono, Menlo, Monaco, Consolas, monospace",
+              }}
+            />
+          </MonacoErrorBoundary>
+        )}
       </div>
     </div>
   );

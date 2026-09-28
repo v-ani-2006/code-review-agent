@@ -64,7 +64,7 @@ export function MobileSidebar() {
           <button
             onClick={() => setMobileSidebarOpen(false)}
             type="button"
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -79,8 +79,9 @@ export function MobileSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
                 onClick={() => setMobileSidebarOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-95 cursor-pointer ${
                   isActive
                     ? "bg-brand-500/15 text-brand-300 border border-brand-500/30"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -100,7 +101,7 @@ export function MobileSidebar() {
               setMobileSidebarOpen(false);
             }}
             type="button"
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-destructive hover:bg-destructive/10 cursor-pointer"
           >
             <LogOut className="h-5 w-5" />
             Sign Out

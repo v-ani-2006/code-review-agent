@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -13,6 +14,7 @@ import {
   FileText,
   History,
   LayoutDashboard,
+  Loader2,
   LogOut,
   Settings,
   Sparkles,
@@ -40,6 +42,12 @@ export function Sidebar() {
   const pathname = usePathname();
   const { isSidebarOpen, toggleSidebar } = useUIStore();
   const { user, logout } = useAuthStore();
+  const [clickedHref, setClickedHref] = useState<string | null>(null);
+
+  // Clear loading indicator once the route actually changes
+  useEffect(() => {
+    setClickedHref(null);
+  }, [pathname]);
 
   return (
     <aside
@@ -72,23 +80,35 @@ export function Sidebar() {
         {NAVIGATION_ITEMS.map((item) => {
           const Icon = iconMap[item.icon] || Code2;
           const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+          const isLoading = clickedHref === item.href && !isActive;
 
           return (
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => {
+                if (pathname !== item.href) {
+                  setClickedHref(item.href);
+                }
+              }}
               className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-                isActive
+                isLoading
+                  ? "bg-brand-500/20 text-brand-300 border border-brand-500/40"
+                  : isActive
                   ? "bg-brand-500/15 text-brand-300 shadow-sm shadow-brand-500/10 border border-brand-500/30"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               }`}
               title={!isSidebarOpen ? item.title : undefined}
             >
-              <Icon
-                className={`h-5 w-5 shrink-0 transition-colors ${
-                  isActive ? "text-brand-400" : "text-muted-foreground group-hover:text-foreground"
-                }`}
-              />
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 shrink-0 animate-spin text-brand-400" />
+              ) : (
+                <Icon
+                  className={`h-5 w-5 shrink-0 transition-colors ${
+                    isActive ? "text-brand-400" : "text-muted-foreground group-hover:text-foreground"
+                  }`}
+                />
+              )}
               {isSidebarOpen && <span className="truncate">{item.title}</span>}
             </Link>
           );
