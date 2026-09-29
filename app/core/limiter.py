@@ -73,7 +73,7 @@ def _get_limiter_storage() -> str:
         with socket.create_connection((host, port), timeout=0.3):
             return redis_url
     except Exception:
-        logger.info("ℹ️ Redis offline for rate limiter; using high-performance in-memory limiter.")
+        logger.info("[INFO] Redis offline for rate limiter; using high-performance in-memory limiter.")
         return "memory://"
 
 

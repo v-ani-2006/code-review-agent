@@ -17,7 +17,7 @@
       "filename_pattern": null,
       "language": "python",
       "created_at": "2026-09-28T16:29:30.763826+00:00",
-      "access_count": 8,
+      "access_count": 10,
       "source": "seed",
       "metadata": {}
     },
@@ -118,7 +118,7 @@
       "filename_pattern": null,
       "language": "python",
       "created_at": "2026-09-28T16:29:30.764067+00:00",
-      "access_count": 2,
+      "access_count": 3,
       "source": "seed",
       "metadata": {}
     },
@@ -213,7 +213,7 @@
       "filename_pattern": null,
       "language": "python",
       "created_at": "2026-09-28T16:33:40.880234+00:00",
-      "access_count": 1,
+      "access_count": 2,
       "source": "api",
       "metadata": {}
     },
@@ -233,7 +233,7 @@
       "filename_pattern": "user_repository.py",
       "language": "python",
       "created_at": "2026-09-28T16:37:00.949128+00:00",
-      "access_count": 3,
+      "access_count": 5,
       "source": "api",
       "metadata": {}
     },
@@ -262,14 +262,14 @@
       "content": "Historical lesson for 'math.py': Review long functions and loops identified in AST analysis.",
       "confidence": 1.0,
       "tags": [
-        "optimization",
+        "python",
         "review",
-        "python"
+        "optimization"
       ],
       "filename_pattern": "math.py",
       "language": "python",
       "created_at": "2026-09-28T16:40:25.113865+00:00",
-      "access_count": 0,
+      "access_count": 1,
       "source": "auto_retain",
       "metadata": {}
     }

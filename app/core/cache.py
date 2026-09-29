@@ -97,10 +97,10 @@ class RedisClientManager:
             )
             await asyncio.wait_for(self.client.ping(), timeout=2.0)
             self.is_connected = True
-            logger.info(" Connected to Redis cache service at %s", settings.REDIS_URL)
+            logger.info("Connected to Redis cache service at %s", settings.REDIS_URL)
         except Exception as exc:
             logger.warning(
-                "⚠️ Redis server connection unreachable at %s (%s). Engaging high-performance in-memory cache fallback.",
+                "[WARNING] Redis server connection unreachable at %s (%s). Engaging high-performance in-memory cache fallback.",
                 settings.REDIS_URL,
                 str(exc),
             )

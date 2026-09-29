@@ -130,13 +130,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage application startup and shutdown lifecycle events."""
     # --- STARTUP LOGIC ---
     logger.info(
-        "🚀 Application Started: %s (v%s) | Debug Mode: %s",
+        "Application Started: %s (v%s) | Debug Mode: %s",
         settings.APP_NAME,
         settings.APP_VERSION,
         settings.DEBUG,
     )
-    logger.info("📚 Interactive Docs: http://127.0.0.1:8000/docs")
-    logger.info("📖 ReDoc Docs:       http://127.0.0.1:8000/redoc")
+    logger.info("Interactive Docs: http://127.0.0.1:8000/docs")
+    logger.info("ReDoc Docs:       http://127.0.0.1:8000/redoc")
 
     # 1. Initialize and verify database connectivity
     await init_db()
