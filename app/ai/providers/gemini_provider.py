@@ -24,19 +24,19 @@ from app.core.config import settings
 from app.core.logging import logger
 
 AVAILABLE_GEMINI_MODELS = [
-    "gemini-2.5-flash",
-    "gemini-2.5-pro",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
+    "gemini-3.1-flash-lite",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-3.8-flash",
+    "gemini-flash-latest",
 ]
 
 
 class GeminiProvider(BaseAIProvider):
     """Google Gemini AI reasoning provider implementation.
 
-    Utilizes asynchronous HTTP client with exponential backoff, timeout handling,
-    and automatic fallback to ensure high reliability across varied network conditions.
+    Utilizes asynchronous HTTP client with automatic model fallback across active
+    Gemini endpoints, timeout handling, and JSON parsing.
     """
 
     def __init__(
@@ -47,10 +47,11 @@ class GeminiProvider(BaseAIProvider):
         max_retries: Optional[int] = None,
     ):
         self.api_key = api_key or settings.GEMINI_API_KEY
-        self.model = model or settings.GEMINI_MODEL or "gemini-2.5-flash"
+        self.model = model or settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
         self.timeout = timeout or settings.AI_TIMEOUT_SECONDS or 60
         self.max_retries = max_retries or settings.AI_MAX_RETRIES or 3
         self._http_client: Optional[httpx.AsyncClient] = None
+        self._active_model_used: str = self.model
 
     def _get_http_client(self) -> httpx.AsyncClient:
         """Get or initialize reusable HTTP client."""
@@ -96,108 +97,91 @@ class GeminiProvider(BaseAIProvider):
         return code
 
     async def _execute_with_retry(self, prompt: str) -> str:
-        """Execute Gemini API generation request with exponential backoff for transient failures."""
+        """Execute Gemini API generation request with multi-model fallback."""
         active_key = self.current_api_key
         if not active_key or active_key.strip() == "" or active_key == "your_gemini_api_key_here":
             raise ValueError(
                 "Gemini API key is not configured. Please set GEMINI_API_KEY in your environment or .env file."
             )
 
-        # First attempt native google-genai SDK if available
-        try:
-            from google import genai
-            from google.genai import types
+        # Candidate models list with fallback priority
+        candidate_models = [self.model, "gemini-3.1-flash-lite", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.8-flash"]
+        seen = set()
+        models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
 
-            client = genai.Client(api_key=active_key)
-
-            async for attempt in AsyncRetrying(
-                stop=stop_after_attempt(self.max_retries),
-                wait=wait_exponential(multiplier=1, min=2, max=10),
-                retry=retry_if_exception_type((Exception,)),
-                reraise=True,
-            ):
-                with attempt:
-                    logger.debug("Executing Gemini request via google-genai SDK (Attempt %d)", attempt.retry_state.attempt_number)
-                    response = await asyncio.wait_for(
-                        client.aio.models.generate_content(
-                            model=self.model,
-                            contents=prompt,
-                            config=types.GenerateContentConfig(
-                                temperature=0.2,
-                                top_p=0.95,
-                            ),
-                        ),
-                        timeout=self.timeout,
-                    )
-                    if response and response.text:
-                        return response.text
-        except ImportError:
-            logger.info("google-genai SDK not available directly, proceeding via high-performance HTTP API")
-        except Exception as sdk_err:
-            logger.warning("google-genai SDK call failed or returned empty (%s), falling back to REST endpoint", str(sdk_err))
-
-        # Direct REST API fallback via httpx with retry
         client = self._get_http_client()
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={active_key}"
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": 0.2,
-                "topP": 0.95,
-            },
-        }
+        last_exception = None
 
-        async for attempt in AsyncRetrying(
-            stop=stop_after_attempt(self.max_retries),
-            wait=wait_exponential(multiplier=1, min=2, max=10),
-            retry=retry_if_exception_type((httpx.RequestError, httpx.HTTPStatusError)),
-            reraise=True,
-        ):
-            with attempt:
-                logger.debug(
-                    "Executing Gemini REST request (Attempt %d/%d) to model '%s'",
-                    attempt.retry_state.attempt_number,
-                    self.max_retries,
-                    self.model,
-                )
-                resp = await client.post(url, json=payload)
-                if resp.status_code in (429, 500, 502, 503, 504):
-                    logger.warning("Transient Gemini API error: status %d. Retrying...", resp.status_code)
-                    resp.raise_for_status()
+        for target_model in models_to_try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{target_model}:generateContent?key={active_key}"
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "temperature": 0.2,
+                    "topP": 0.95,
+                },
+            }
 
-                if resp.status_code != 200:
-                    error_detail = resp.text
-                    logger.error("Gemini API error status %d: %s", resp.status_code, error_detail)
-                    raise RuntimeError(f"Gemini API returned status {resp.status_code}: {error_detail}")
-
-                data = resp.json()
+            for attempt in range(1, self.max_retries + 1):
                 try:
-                    candidates = data.get("candidates", [])
-                    if candidates and "content" in candidates[0]:
-                        parts = candidates[0]["content"].get("parts", [])
-                        if parts and "text" in parts[0]:
-                            return parts[0]["text"]
-                except Exception as parse_err:
-                    logger.error("Failed to parse Gemini API response payload: %s", str(parse_err))
-                    raise RuntimeError(f"Malformed response from Gemini: {data}")
+                    logger.info("Executing Gemini request (Attempt %d) to model '%s'", attempt, target_model)
+                    resp = await client.post(url, json=payload)
 
-        raise RuntimeError("Gemini failed to return text content after all retry attempts.")
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        candidates = data.get("candidates", [])
+                        if candidates and "content" in candidates[0]:
+                            parts = candidates[0]["content"].get("parts", [])
+                            if parts and "text" in parts[0]:
+                                self._active_model_used = target_model
+                                return parts[0]["text"]
+                        raise RuntimeError(f"Malformed response from Gemini model {target_model}")
+
+                    # 404 means model deprecated/not available; 429 quota; 503 high demand -> fallback to next candidate model
+                    if resp.status_code in (404, 429, 503):
+                        logger.warning(
+                            "Model '%s' returned status %d (%s). Falling back to next model candidate.",
+                            target_model,
+                            resp.status_code,
+                            resp.text[:100],
+                        )
+                        last_exception = RuntimeError(f"Model {target_model} returned {resp.status_code}")
+                        break  # Break inner loop to try next model candidate immediately
+
+                    if resp.status_code in (500, 502, 504):
+                        logger.warning("Transient error %d on model '%s'. Retrying attempt %d...", resp.status_code, target_model, attempt)
+                        await asyncio.sleep(1.5 * attempt)
+                        continue
+
+                    error_detail = resp.text
+                    logger.error("Gemini API error %d: %s", resp.status_code, error_detail)
+                    last_exception = RuntimeError(f"Gemini API returned status {resp.status_code}: {error_detail}")
+                    break
+
+                except httpx.RequestError as exc:
+                    logger.warning("Network request error on '%s': %s", target_model, str(exc))
+                    last_exception = exc
+                    await asyncio.sleep(1.0)
+
+        if last_exception:
+            raise last_exception
+        raise RuntimeError("Gemini failed to return text content after all fallback model attempts.")
 
     async def _generate_response(self, prompt: str) -> AIProviderResponse:
         """Internal helper to time, execute, and package generation."""
         start_time = time.perf_counter()
         sanitized_prompt = prompt
         try:
-            logger.info("AI request started | Model: %s", self.model)
+            logger.info("AI request started | Preferred Model: %s", self.model)
             raw_text = await self._execute_with_retry(sanitized_prompt)
             duration = round(time.perf_counter() - start_time, 4)
-            logger.info("AI request completed in %.4fs | Model: %s", duration, self.model)
+            logger.info("AI request completed in %.4fs | Model: %s", duration, self._active_model_used)
 
             parsed = extract_json_fragment(raw_text)
             return AIProviderResponse(
                 raw_text=raw_text,
                 parsed_json=parsed,
-                model_used=self.model,
+                model_used=self._active_model_used,
                 processing_time=duration,
                 success=True,
             )
@@ -207,7 +191,7 @@ class GeminiProvider(BaseAIProvider):
             return AIProviderResponse(
                 raw_text="",
                 parsed_json=None,
-                model_used=self.model,
+                model_used=self._active_model_used,
                 processing_time=duration,
                 success=False,
                 error=str(exc),

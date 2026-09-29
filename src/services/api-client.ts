@@ -3,7 +3,7 @@ import { API_BASE_URL } from "@/lib/constants";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 45000, // 45 seconds for AI reasoning requests
+  timeout: 90000, // 90 seconds for AI reasoning requests with rate-limit retries
   headers: {
     "Content-Type": "application/json",
   },

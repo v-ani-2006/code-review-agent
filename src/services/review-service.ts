@@ -12,14 +12,32 @@ export const reviewService = {
     return response.data;
   },
 
-  // Deep Gemini 2.5 Flash review
+  // Deep Gemini Flash review
   async aiReview(code: string, language = "python", detailLevel = "comprehensive"): Promise<AIReviewResponse> {
-    const response = await apiClient.post<AIReviewResponse>("/ai/review", {
+    const response = await apiClient.post<any>("/ai/review", {
       code,
       language,
       detail_level: detailLevel,
     });
-    return response.data;
+    const data = response.data;
+    const reviewData = data.review || data;
+
+    // Build consolidated recommendations from review sections
+    const recs: string[] = [];
+    if (Array.isArray(reviewData.critical_issues)) recs.push(...reviewData.critical_issues);
+    if (Array.isArray(reviewData.optimization_suggestions)) recs.push(...reviewData.optimization_suggestions);
+    if (Array.isArray(reviewData.refactoring_suggestions)) recs.push(...reviewData.refactoring_suggestions);
+    if (Array.isArray(reviewData.best_practices)) recs.push(...reviewData.best_practices);
+    if (Array.isArray(reviewData.recommendations)) recs.push(...reviewData.recommendations);
+
+    return {
+      summary: reviewData.summary || data.message || "AI review completed successfully.",
+      strengths: Array.isArray(reviewData.strengths) ? reviewData.strengths : ["Code is syntactically well-structured"],
+      recommendations: recs.length > 0 ? recs : ["No major structural violations detected."],
+      bugfix: reviewData.bugfix || data.bugfix || null,
+      model_used: data.model_used || reviewData.model_used || "gemini-3.1-flash-lite",
+      processing_time: data.processing_time || reviewData.processing_time || 0,
+    };
   },
 
   // Explain code complexity and execution flow

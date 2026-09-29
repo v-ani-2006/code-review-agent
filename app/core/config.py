@@ -79,7 +79,7 @@ class Settings(BaseSettings):
         description="Google Gemini API key for AI reasoning",
     )
     GEMINI_MODEL: str = Field(
-        default="gemini-3.8-flash",
+        default="gemini-3.1-flash-lite",
         description="Default Gemini model identifier",
     )
     AI_TIMEOUT_SECONDS: int = Field(
@@ -87,7 +87,7 @@ class Settings(BaseSettings):
         description="Maximum execution timeout for AI requests in seconds",
     )
     AI_MAX_RETRIES: int = Field(
-        default=3,
+        default=5,
         description="Maximum retry attempts on transient network or rate-limit failures",
     )
 

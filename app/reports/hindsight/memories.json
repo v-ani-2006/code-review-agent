@@ -17,7 +17,7 @@
       "filename_pattern": null,
       "language": "python",
       "created_at": "2026-09-28T16:29:30.763826+00:00",
-      "access_count": 10,
+      "access_count": 11,
       "source": "seed",
       "metadata": {}
     },
@@ -37,7 +37,7 @@
       "filename_pattern": null,
       "language": "python",
       "created_at": "2026-09-28T16:29:30.763969+00:00",
-      "access_count": 0,
+      "access_count": 1,
       "source": "seed",
       "metadata": {}
     },
@@ -118,7 +118,7 @@
       "filename_pattern": null,
       "language": "python",
       "created_at": "2026-09-28T16:29:30.764067+00:00",
-      "access_count": 3,
+      "access_count": 8,
       "source": "seed",
       "metadata": {}
     },
@@ -137,7 +137,7 @@
       "filename_pattern": null,
       "language": "python",
       "created_at": "2026-09-28T16:29:30.764085+00:00",
-      "access_count": 0,
+      "access_count": 4,
       "source": "seed",
       "metadata": {}
     },
@@ -213,7 +213,7 @@
       "filename_pattern": null,
       "language": "python",
       "created_at": "2026-09-28T16:33:40.880234+00:00",
-      "access_count": 2,
+      "access_count": 1,
       "source": "api",
       "metadata": {}
     },
@@ -233,7 +233,7 @@
       "filename_pattern": "user_repository.py",
       "language": "python",
       "created_at": "2026-09-28T16:37:00.949128+00:00",
-      "access_count": 5,
+      "access_count": 3,
       "source": "api",
       "metadata": {}
     },
@@ -262,14 +262,104 @@
       "content": "Historical lesson for 'math.py': Review long functions and loops identified in AST analysis.",
       "confidence": 1.0,
       "tags": [
-        "python",
+        "optimization",
         "review",
-        "optimization"
+        "python"
       ],
       "filename_pattern": "math.py",
       "language": "python",
       "created_at": "2026-09-28T16:40:25.113865+00:00",
+      "access_count": 0,
+      "source": "auto_retain",
+      "metadata": {}
+    },
+    {
+      "id": "mem-cb6e0e5c3d",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "refactor_decision",
+      "content": "Historical lesson for 'test.py': Review long functions and loops identified in AST analysis.",
+      "confidence": 1.0,
+      "tags": [
+        "optimization",
+        "review",
+        "python"
+      ],
+      "filename_pattern": "test.py",
+      "language": "python",
+      "created_at": "2026-09-29T06:38:42.833332+00:00",
+      "access_count": 0,
+      "source": "auto_retain",
+      "metadata": {}
+    },
+    {
+      "id": "mem-977ac1d80a",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "refactor_decision",
+      "content": "Historical lesson for 'main.py': Review long functions and loops identified in AST analysis.",
+      "confidence": 1.0,
+      "tags": [
+        "review",
+        "python",
+        "optimization"
+      ],
+      "filename_pattern": "main.py",
+      "language": "python",
+      "created_at": "2026-09-29T06:43:31.434793+00:00",
       "access_count": 1,
+      "source": "auto_retain",
+      "metadata": {}
+    },
+    {
+      "id": "mem-8d061fd010",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "refactor_decision",
+      "content": "Historical lesson for 'main.py': Use the built-in 'sum()' function with a generator expression for more idiomatic and potentially faster execution: 'return sum(item.price for item in items)'.",
+      "confidence": 1.0,
+      "tags": [
+        "optimization",
+        "review",
+        "python"
+      ],
+      "filename_pattern": "main.py",
+      "language": "python",
+      "created_at": "2026-09-29T07:05:55.725606+00:00",
+      "access_count": 0,
+      "source": "auto_retain",
+      "metadata": {}
+    },
+    {
+      "id": "mem-9aaba7e906",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "refactor_decision",
+      "content": "Historical lesson for 'main.py': Implement a context manager (using 'with' statement) for the sqlite3 connection to ensure resources are closed automatically.",
+      "confidence": 1.0,
+      "tags": [
+        "optimization",
+        "review",
+        "python"
+      ],
+      "filename_pattern": "main.py",
+      "language": "python",
+      "created_at": "2026-09-29T07:12:34.797821+00:00",
+      "access_count": 2,
+      "source": "auto_retain",
+      "metadata": {}
+    },
+    {
+      "id": "mem-7a601dce27",
+      "bank_id": "codepilot-memory-bank",
+      "memory_type": "refactor_decision",
+      "content": "Historical lesson for 'main.py': Implement a context manager for the sqlite3 connection to ensure automatic resource cleanup.",
+      "confidence": 1.0,
+      "tags": [
+        "optimization",
+        "python",
+        "review"
+      ],
+      "filename_pattern": "main.py",
+      "language": "python",
+      "created_at": "2026-09-29T07:12:42.260722+00:00",
+      "access_count": 2,
       "source": "auto_retain",
       "metadata": {}
     }
