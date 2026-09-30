@@ -27,9 +27,7 @@
 
 ---
 
-## 🏆 Quick Evaluation Guide for Judges & Reviewers
 
-If you are evaluating this project, here is the fastest way to inspect, run, and test the entire system:
 
 ### 1. 🌐 Interactive Web Frontend (Next.js 15 + React 19)
 The repository includes a modern SaaS frontend built with Next.js 15, React 19, Monaco Editor, TanStack Query, and Recharts:
