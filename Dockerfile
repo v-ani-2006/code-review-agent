@@ -1,7 +1,7 @@
 # ==============================================================================
 # Stage 1: Builder — install Python dependencies into a clean virtual env
 # ==============================================================================
-FROM python:3.13-slim AS builder
+FROM python:3.14-slim AS builder
 
 # System packages needed to compile Python extensions (psycopg, cryptography, etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -28,7 +28,7 @@ RUN pip install --upgrade pip && \
 # ==============================================================================
 # Stage 2: Production runtime — minimal image, non-root user
 # ==============================================================================
-FROM python:3.13-slim AS production
+FROM python:3.14-slim AS production
 
 LABEL maintainer="CodePilot AI Team"
 LABEL version="0.1.0"
